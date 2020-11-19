@@ -46,49 +46,46 @@ for i in range(where2,where4):
 for i in range(where4,where5):
     redlist.append(array[i])
 
+#firstblue = find(array, "blue")
+#secondblue = find_range(array, "blue", firstblue, "end")
+
+#firstred = find(array, "red")
+#secondred = find_range(array, "red", firstred, "end")
+
+print(where2)
+print(where4)
+print("--------------------")
+#print(secondblue)
+#print(secondred)
+
+
 #----------------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
 #Next part is doing the outer and inner cell calculations for the blue alliance
 #----------------------------------------------------------------------------------------------------------------
 
-outercells = 0
-for i in range(0,len(bluelist)):
-    if bluelist[i] == 't' and bluelist[i+1] == 'e' and bluelist[i+2] == 'l' and bluelist[i+3] == 'e' and bluelist[i+4] == 'o' and bluelist[i+5] == 'p' and bluelist[i+6] == 'C' and bluelist[i+7] == 'e' and bluelist[i+8] == 'l' and bluelist[i+9] == 'l' and bluelist[i+10] == 's' and bluelist[i+11] == 'O' and bluelist[i+12] == 'u' and bluelist[i+13] == 't' and bluelist[i+14] == 'e' and bluelist[i+15] == 'r':
-        outercells = i+16
-end1 = 0;
-for i in range(outercells,len(bluelist)):
-    if bluelist[i] == ',':
-        end1 = i
-        break
-outerlst = []
-s= ''
-for i in range(outercells+3,end1):
-    outerlst.append(bluelist[i])
-outerscore = int(s.join(outerlst))
-
-innercells = 0;
-for i in range(0,len(bluelist)):
-    if bluelist[i] == 't' and bluelist[i+1] == 'e' and bluelist[i+2] == 'l' and bluelist[i+3] == 'e' and bluelist[i+4] == 'o' and bluelist[i+5] == 'p' and bluelist[i+6] == 'C' and bluelist[i+7] == 'e' and bluelist[i+8] == 'l' and bluelist[i+9] == 'l' and bluelist[i+10] == 's' and bluelist[i+11] == 'I' and bluelist[i+12] == 'n' and bluelist[i+13] == 'n' and bluelist[i+14] == 'e' and bluelist[i+15] == 'r':
-        innercells = i+16
-end2 = 0;
-for i in range(innercells,len(bluelist)):
-    if bluelist[i] == ',':
-        end2 = i
-        break
-innerlst = []
-s= ''
-for i in range(innercells+3,end2):
-    innerlst.append(bluelist[i])
-innerscore = int(s.join(innerlst))
-
-#---------------------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------------
-
 def find(list, word):
     found = False
     place = 0
     for bch in range(0,len(list)):
+        count = 0
+        for ch in range(0,len(word)):
+            if list[bch+count] == word[ch]:
+                found = True
+            else:
+                found = False
+                break
+            count += 1
+        if found == True:
+            return bch+len(word)
+            break
+
+def find_range(list, word, start, end):
+    if end == "end":
+        end = len(list)
+    found = False
+    place = 0
+    for bch in range(start,end):
         count = 0
         for ch in range(0,len(word)):
             if list[bch+count] == word[ch]:
@@ -115,6 +112,16 @@ def find_value(list, pos):
 
 def get_value(list, word):
     return find_value(list,find(list,word))
+
+
+firstblue = find(array, "blue")
+secondblue = find_range(array, "blue", firstblue, "end")
+
+firstred = find(array, "red")
+secondred = find_range(array, "red", firstred, "end")
+
+print(secondblue)
+print(secondred)
 
 print("--------------------------------------------------------")  
 print(get_value(redlist, "teleopPoints"))
