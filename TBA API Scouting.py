@@ -3,64 +3,13 @@ import requests
 r = requests.get('https://www.thebluealliance.com/api/v3/match/2020cadm_qm87', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
 
 the_string = r.text
-array = [];
 
+array = []
 for i in the_string:
     array.append(i)
 
 print(the_string)
 #print(array)
-
-where = 0
-for i in range(0,len(array),1):
-    if array[i]=='b' and array[i+1]=='l' and array[i+2]=='u' and array[i+3]=='e':
-        where = i+4
-        break
-where2 = 0
-for i in range(where,len(array),1):
-    if array[i]=='b' and array[i+1]=='l' and array[i+2]=='u' and array[i+3]=='e':
-        where2 = i
-        break
-where3 = 0
-for i in range(0,len(array),1):
-    if array[i]=='r' and array[i+1]=='e' and array[i+2]=='d' and array[i+3]=='"':
-        where3 = i+4
-        break
-where4 = 0
-for i in range(where3,len(array),1):
-    if array[i]=='r' and array[i+1]=='e' and array[i+2]=='d' and array[i+3]=='"':
-        where4 = i
-        break
-where5 = 0
-for i in range(where4,len(array),1):
-    if array[i]=='}':
-        where5 = i
-        break
-
-bluelist = []
-redlist = []
-
-for i in range(where2,where4):
-    bluelist.append(array[i])
-
-for i in range(where4,where5):
-    redlist.append(array[i])
-
-#firstblue = find(array, "blue")
-#secondblue = find_range(array, "blue", firstblue, "end")
-
-#firstred = find(array, "red")
-#secondred = find_range(array, "red", firstred, "end")
-
-
-#print(where)
-#print(where2)
-#print(where3)
-#print(where4)
-#print("--------------------")
-#print(secondblue)
-#print(secondred)
-
 
 #----------------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
@@ -116,6 +65,8 @@ def find_value(list, pos):
 def get_value(list, word):
     return find_value(list,find(list,word))
 
+#----------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------
 
 firstblue = find(array, "blue")
 secondblue = find_range(array, "blue", firstblue, "end")
@@ -138,9 +89,37 @@ for i in range(secondblue,secondred):
 for i in range(secondred,endred):
     redlist2.append(array[i])
 
-print("--------------------------------------------------------")  
-print(get_value(redlist, "teleopPoints"))
-print(get_value(bluelist, "teleopPoints"))
+def match_red(in_string):
+    array = []
+    for i in in_string:
+        array.append(i)
+    firstred = find(array, "red")
+    secondred = find_range(array, ['r','e','d','"'], firstred, "end")
+    endred = 0
+    redlist = []
+    for i in range(secondred,len(array),1):
+        if array[i]=='}':
+            endred = i
+            break
+    for i in range(secondred,endred):
+        redlist.append(array[i])
+    return redlist
+
+def match_blue(in_string):
+    array = []
+    for i in in_string:
+        array.append(i)
+    firstblue = find(array, "blue")
+    secondblue = find_range(array, "blue", firstblue, "end")    
+    firstred = find(array, "red")
+    secondred = find_range(array, ['r','e','d','"'], firstred, "end")
+    bluelist = []
+    for i in range(secondblue,secondred):
+        bluelist.append(array[i])
+    return bluelist
+
 print("--------------------------------------------------------")  
 print(get_value(redlist2, "teleopPoints"))
+print(get_value(match_red(the_string), "teleopPoints"))
 print(get_value(bluelist2, "teleopPoints"))
+print(get_value(match_blue(the_string), "teleopPoints"))
