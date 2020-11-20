@@ -1,10 +1,12 @@
 import requests
 from operator import index
-#team/frc2658/event/2020cadm/matches/keys
+import json
+
 r = requests.get('https://www.thebluealliance.com/api/v3/match/2020cadm_qm87', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
-first = requests.get('https://www.thebluealliance.com/api/v3/team/frc2658/event/2020cadm/matches/keys', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
-the_string = r.text
-#print(the_string)
+#print(r.text)
+
+s = requests.get('https://www.thebluealliance.com/api/v3/event/2020cadm/teams/simple', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+#print(s.text)
 #----------------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
 
@@ -54,8 +56,8 @@ def find_value(list, pos):
         scorelist.append(list[i])
     return int(s.join(scorelist))
 
-def get_value(list, word):
-    return find_value(list,find(list,word))
+#def get_value(list, word):
+#    return find_value(list,find(list,word))
 
 #----------------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
@@ -128,13 +130,62 @@ print("--------------------------------------------------------")
 #print(get_value(match_red(the_string), "teleopPoints"))
 #print(get_value(match_blue(the_string), "teleopPoints"))
 
-for i in store_keys(first.text):
-    match = requests.get('https://www.thebluealliance.com/api/v3/match/' + i, params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
-    rtp = get_value(match_red(match.text), "teleopCellsOuter")
-    rip = get_value(match_red(match.text), "teleopCellsInner")
-    btp = get_value(match_blue(match.text), "teleopCellsOuter")
-    bip = get_value(match_red(match.text), "teleopCellsInner")
-    print("Match: " + i)
-    print("Red Top: " + str(rtp+rip))
-    print("Blue Top: " + str(btp+bip))
-    print("--------------------------------------------------------")
+#for i in store_keys(first.text):
+#    match = requests.get('https://www.thebluealliance.com/api/v3/match/' + i, params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+#    rtp = get_value(match_red(match.text), "teleopCellsOuter")
+#    rip = get_value(match_red(match.text), "teleopCellsInner")
+#    btp = get_value(match_blue(match.text), "teleopCellsOuter")
+#    bip = get_value(match_red(match.text), "teleopCellsInner")
+#    print("Match: " + i)
+#    print("Red Top: " + str(rtp+rip))
+#    print("Blue Top: " + str(btp+bip))
+#    print("--------------------------------------------------------")
+
+#----------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------
+
+def get_alliance(num, match):
+    dict = json.loads(match.text)
+    for i in dict['alliances']['blue']['team_keys']:
+        if i == 'frc' + str(num):
+            return 'blue'
+    for i in dict['alliances']['red']['team_keys']:
+        if i == 'frc' + str(num):
+            return 'red'
+    return 'That team is not in this match.'
+
+def which_robot(num, match):
+    dict = json.loads(match.text)
+    for i in range(0,len(dict['alliances']['blue']['team_keys'])):
+        if dict['alliances']['blue']['team_keys'][i] == 'frc' + str(num):
+            return i+1
+    for i in range(0,len(dict['alliances']['red']['team_keys'])):
+        if dict['alliances']['red']['team_keys'][i] == 'frc' + str(num):
+            return i+1
+    return 'That team is not in this match.'
+
+def get_value(num, key, thing):
+    info = requests.get('https://www.thebluealliance.com/api/v3/match/' + key, params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+    dict = json.loads(info.text)
+    return dict['score_breakdown'][get_alliance(num, info)][thing]
+
+def team_average(num, thing):
+    matches = requests.get('https://www.thebluealliance.com/api/v3/team/frc' + str(num) + '/event/2020cadm/matches/keys', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+    thing_amount = 0
+    thing_total = 0
+    for match in store_keys(matches.text):
+        thing_amount += 1
+        thing_total += get_value(num, match, thing)
+    return thing_total/thing_amount
+
+def team_list(event_key):
+    info = requests.get('https://www.thebluealliance.com/api/v3/event/' + event_key + '/teams/simple', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+    dict = json.loads(info.text)
+    teamlist = []
+    for i in range(0,len(dict)):
+        team = dict[i]
+        teamlist.append(team['team_number'])
+    return teamlist
+
+print(team_list('2020cadm'))
+#print(team_average(2658, 'totalPoints'))
