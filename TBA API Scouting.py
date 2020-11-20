@@ -11,27 +11,27 @@ for i in the_string:
 print(the_string)
 #print(array)
 
-where = 0;
+where = 0
 for i in range(0,len(array),1):
     if array[i]=='b' and array[i+1]=='l' and array[i+2]=='u' and array[i+3]=='e':
         where = i+4
         break
-where2 = 0;
+where2 = 0
 for i in range(where,len(array),1):
     if array[i]=='b' and array[i+1]=='l' and array[i+2]=='u' and array[i+3]=='e':
         where2 = i
         break
-where3 = 0;
+where3 = 0
 for i in range(0,len(array),1):
     if array[i]=='r' and array[i+1]=='e' and array[i+2]=='d' and array[i+3]=='"':
         where3 = i+4
         break
-where4 = 0;
+where4 = 0
 for i in range(where3,len(array),1):
     if array[i]=='r' and array[i+1]=='e' and array[i+2]=='d' and array[i+3]=='"':
         where4 = i
         break
-where5 = 0;
+where5 = 0
 for i in range(where4,len(array),1):
     if array[i]=='}':
         where5 = i
@@ -52,9 +52,12 @@ for i in range(where4,where5):
 #firstred = find(array, "red")
 #secondred = find_range(array, "red", firstred, "end")
 
-print(where2)
-print(where4)
-print("--------------------")
+
+#print(where)
+#print(where2)
+#print(where3)
+#print(where4)
+#print("--------------------")
 #print(secondblue)
 #print(secondred)
 
@@ -118,11 +121,26 @@ firstblue = find(array, "blue")
 secondblue = find_range(array, "blue", firstblue, "end")
 
 firstred = find(array, "red")
-secondred = find_range(array, "red", firstred, "end")
+secondred = find_range(array, ['r','e','d','"'], firstred, "end")
 
-print(secondblue)
-print(secondred)
+endred = 0
+for i in range(secondred,len(array),1):
+    if array[i]=='}':
+        endred = i
+        break
+
+bluelist2 = []
+redlist2 = []
+
+for i in range(secondblue,secondred):
+    bluelist2.append(array[i])
+
+for i in range(secondred,endred):
+    redlist2.append(array[i])
 
 print("--------------------------------------------------------")  
 print(get_value(redlist, "teleopPoints"))
 print(get_value(bluelist, "teleopPoints"))
+print("--------------------------------------------------------")  
+print(get_value(redlist2, "teleopPoints"))
+print(get_value(bluelist2, "teleopPoints"))
