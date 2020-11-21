@@ -164,13 +164,13 @@ def which_robot(num, match):
             return i+1
     return 'That team is not in this match.'
 
-def get_value(num, key, thing):
-    info = requests.get('https://www.thebluealliance.com/api/v3/match/' + key, params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+def get_value(num, match_key, thing):
+    info = requests.get('https://www.thebluealliance.com/api/v3/match/' + match_key, params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
     dict = json.loads(info.text)
     return dict['score_breakdown'][get_alliance(num, info)][thing]
 
-def team_average(num, thing):
-    matches = requests.get('https://www.thebluealliance.com/api/v3/team/frc' + str(num) + '/event/2020cadm/matches/keys', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+def team_average(num, event_key, thing):
+    matches = requests.get('https://www.thebluealliance.com/api/v3/team/frc' + str(num) + '/event/' + event_key + '/matches/keys', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
     thing_amount = 0
     thing_total = 0
     for match in store_keys(matches.text):
@@ -187,5 +187,49 @@ def team_list(event_key):
         teamlist.append(team['team_number'])
     return teamlist
 
-print(team_list('2020cadm'))
+#print(team_list('2020cadm'))
 #print(team_average(2658, 'totalPoints'))
+
+def climb_num(num, event_key):
+    matches = requests.get('https://www.thebluealliance.com/api/v3/team/frc' + str(num) + '/event/' + event_key + '/matches/keys', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+    total_points = 0
+    total_amount = 0
+    for match_key in store_keys(matches.text):
+        match = requests.get('https://www.thebluealliance.com/api/v3/match/' + match_key, params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+        robot = which_robot(num, match)
+        climb = get_value(num, match_key, 'endgameRobot' + str(robot))
+        if climb == 'Hang':
+            total_points += 1
+        total_amount += 1
+    return total_points/total_amount
+        
+del_mar = '2020cadm'
+"""
+for team in team_list(del_mar):
+    print("Team: " + str(team))
+    print("Average Total Score: " + str(team_average(team, del_mar, "totalPoints")))
+    auto_balls = team_average(team, del_mar, 'autoCellsInner') + team_average(team, del_mar, 'autoCellsOuter')
+    print("Average Auto Cells (Top Port): " + str(auto_balls))
+    teleop_balls = team_average(team, del_mar, 'teleopCellsInner') + team_average(team, del_mar, 'teleopCellsOuter')
+    print("Average Teleop Cells (Top Port): " + str(teleop_balls))
+    print("Climb Number: " + str(climb_num(team, del_mar)))
+    print("-------------------------------------------------")
+"""
+def rank_num(num, event_key):
+    climb = climb_num(num, del_mar)
+    auto_balls = team_average(num, del_mar, 'autoCellsInner') + team_average(num, del_mar, 'autoCellsOuter')
+    teleop_balls = team_average(num, del_mar, 'teleopCellsInner') + team_average(num, del_mar, 'teleopCellsOuter')
+    return (0.4*teleop_balls)+(0.4*climb)+(+0.2*auto_balls)
+
+ranklist = {}
+for team in team_list(del_mar):
+    print("Thinking...")
+    ranklist[team] = rank_num(team, del_mar)
+print("------------------------------------------------------")
+
+sort_rank = sorted(ranklist.items(), key=lambda x: x[1], reverse=True)
+count = 1
+for team in sort_rank:
+    print(str(count) + ". " + str(team[0]) + " (" +  str(team[1]) + ")")
+    count += 1
+
