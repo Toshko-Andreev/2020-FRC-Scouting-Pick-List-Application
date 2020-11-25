@@ -7,6 +7,9 @@ r = requests.get('https://www.thebluealliance.com/api/v3/match/2020cadm_qm87', p
 
 s = requests.get('https://www.thebluealliance.com/api/v3/event/2020cadm/teams/simple', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
 #print(s.text)
+
+t = requests.get('https://www.thebluealliance.com/api/v3/event/2020cadm/rankings', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+#print (t.text)
 #----------------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
 
@@ -221,15 +224,53 @@ def rank_num(num, event_key):
     teleop_balls = team_average(num, del_mar, 'teleopCellsInner') + team_average(num, del_mar, 'teleopCellsOuter')
     return (0.4*teleop_balls)+(0.4*climb)+(+0.2*auto_balls)
 
-ranklist = {}
-for team in team_list(del_mar):
-    print("Thinking...")
-    ranklist[team] = rank_num(team, del_mar)
-print("------------------------------------------------------")
+def ball_rank(num, event_key):
+    return team_average(num, del_mar, 'teleopCellsInner') + team_average(num, del_mar, 'teleopCellsOuter')
 
-sort_rank = sorted(ranklist.items(), key=lambda x: x[1], reverse=True)
+def official_ranklist(event_key):
+    info = requests.get('https://www.thebluealliance.com/api/v3/event/' + event_key + '/rankings', params = {'X-TBA-Auth-Key': 'ZxhuACw5seFvz5VqNxNGKG9yC9sbDZshpjM4PisgEgVc533hlJQSp20zDrYZe1FX'})
+    rankings = json.loads(info.text)
+    ranklist1 = []
+    for i in rankings['rankings']:
+        ranklist1.append(i['team_key'])
+    ranklist2 = []
+    for str in ranklist1:
+        new_str = str[3:]
+        ranklist2.append(int(new_str))
+    return ranklist2
+
+#print(official_ranklist(del_mar))
+
+def diff_in_rank(event_key, team, unofficial_rank):
+    official = official_ranklist(event_key)
+    unofficial = []
+    for i in unofficial_rank:
+        unofficial.append(i[0])
+    official_index = official.index(team)
+    unofficial_index = unofficial.index(team)
+    return official_index - unofficial_index
+
+def get_ranklist(event_key):
+    ranklist = {}
+    tn = 1
+    for team in team_list(event_key):
+        print(str(tn) + "/" + str(len(team_list(event_key))) + " Done")
+        ranklist[team] = rank_num(team, event_key)
+        #ranklist[team] = ball_rank(team, event_key)
+        tn += 1
+    return sorted(ranklist.items(), key=lambda x: x[1], reverse=True)
+
+ranks = get_ranklist(del_mar)
+#print(ranks)
+print("------------------------------------------")
 count = 1
+for i in ranks:
+    print(str(count) + ". " + str(i[0]) + " (" +  str(i[1]) + ")" + " (Diff: " + str(diff_in_rank(del_mar, i[0], ranks)) + ")")
+    count += 1
+    
+"""
 for team in sort_rank:
     print(str(count) + ". " + str(team[0]) + " (" +  str(team[1]) + ")")
     count += 1
-
+"""
+#print(get_ranklist(del_mar))
