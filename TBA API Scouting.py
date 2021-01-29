@@ -115,13 +115,6 @@ def data_list(event_key):
         tn += 1
     return datalist
 
-#Calculates the rank number for a given team at a given event
-def rank_num(num, event_key):
-    climb = climb_num(num, event_key)
-    auto_balls = team_average(num, event_key, 'autoCellsInner') + team_average(num, event_key, 'autoCellsOuter')
-    teleop_balls = team_average(num, event_key, 'teleopCellsInner') + team_average(num, event_key, 'teleopCellsOuter')
-    return (0.4*teleop_balls)+(0.4*climb)+(+0.2*auto_balls)
-
 #Calculates the average number of balls scored in the inner and outer port during auto for a team at an event
 def auto_num(num, event_key):
     return team_average(num, event_key, 'autoCellsInner') + team_average(num, event_key, 'autoCellsOuter')
@@ -153,46 +146,29 @@ def diff_in_rank(event_key, team, unofficial_rank):
     unofficial_index = unofficial.index(team)
     return official_index - unofficial_index
 
-#Gets the personalized rank list for an event
-def get_ranklist(event_key):
-    ranklist = {}
-    tn = 1
-    teamlist = team_list(event_key)
-    for team in teamlist:
-        print("Rank list: " + str(tn) + "/" + str(len(teamlist)) + " Done")
-        ranklist[team] = rank_num(team, event_key)
-        tn += 1
-    return sorted(ranklist.items(), key=lambda x: x[1], reverse=True)
-
-#Prints the rank list created
-def print_ranklist(event_key):
-    ranks = get_ranklist(event_key)
-    print("------------------------------------------")
-    count = 1
-    for i in ranks:
-        print(str(count) + ". " + str(i[0]) + " (Rank Num: " +  str(round(i[1],2)) + ")" + "(Climb Num: " + str(round(float(str(climb_num(i[0], event_key))),2)) + ")" + "(Teleop Num: " + str(round(float(str(teleop_num(i[0], event_key))),2)) + ")" + "(Auto Num: " + str(round(float(str(auto_num(i[0], event_key)), 2))) + ")" + " (Difference: " + str(diff_in_rank(event_key, i[0], ranks)) + ")")
-        count += 1
-
 #Gets the rank of a team from the data list
-def data_rank(team, datalist):
+def rank_num(team, datalist, teleop_weight, climb_weight, auto_weight):
     climb = datalist[team]['climb']
     auto = datalist[team]['auto_balls']
     teleop = datalist[team]['teleop_balls']
-    return (0.4*teleop)+(0.4*climb)+(+0.2*auto) 
+    teleop_total = float(teleop_weight)*teleop
+    climb_total = float(climb_weight)*climb
+    auto_total = float(auto_weight)*auto
+    return teleop_total + climb_total + auto_total
     
 #Gets the ranklist of an event from the data list
-def data_ranklist(event_key, datalist):
+def get_ranklist(event_key, datalist, teleop_weight, climb_weight, auto_weight):
     ranklist = {}
     tn = 1
     teamlist = team_list(event_key)
     for team in teamlist:
-        ranklist[team] = data_rank(team, datalist)
+        ranklist[team] = rank_num(team, datalist, teleop_weight, climb_weight, auto_weight)
         tn += 1
     return sorted(ranklist.items(), key=lambda x: x[1], reverse=True)
 
 #Prints the data list created rank list 
-def print_data_ranks(ranks, datalist, event_key):
-    print("------------------------------------------")
+def print_ranklist(ranks, datalist, event_key):
+    print("----------------------------------------------------------------------------------------------")
     count = 1
     for i in ranks:
         print(str(count) + ". " + str(i[0]) + " (Rank Num: " +  str(round(i[1],2)) + ")" + "(Climb Num: " + str(round(float(str(datalist[i[0]]['climb'])),2)) + ")" + "(Teleop Num: " + str(round(float(str(datalist[i[0]]['teleop_balls'])),2)) + ")" + "(Auto Num: " + str(round(float(str(datalist[i[0]]['auto_balls'])), 2)) + ")" + " (Difference: " + str(diff_in_rank(event_key, i[0], ranks)) + ")")
@@ -201,11 +177,14 @@ def print_data_ranks(ranks, datalist, event_key):
 #End of all functions for overall team or event
 #----------------------------------------------------------------------------------------------------------------
 
-datalist = data_list('2020cadm')
-print(datalist)
-print("--------------------------------------------------------------------------------")
-print("--------------------------------------------------------------------------------")
-print(data_ranklist('2020cadm', datalist))
-print("--------------------------------------------------------------------------------")
-print("--------------------------------------------------------------------------------")
-print_data_ranks(data_ranklist('2020cadm', datalist), datalist, '2020cadm')
+regional = input("What is the regional code?")
+datalist = data_list(regional)
+repeat = True
+while repeat:
+    teleop = input("What weight would you like to set for the balls scored in teleop?")
+    auto = input("What weight would you like to set for the balls scored in auto?")
+    climb = input("What weight would you like to set for the climb number?")
+    print_ranklist(get_ranklist(regional, datalist, teleop, climb, auto), datalist, regional)
+    again = input("Do you want to set different weights?")
+    if again.lower() == 'no' or again.lower() == 'n':
+        repeat = False
